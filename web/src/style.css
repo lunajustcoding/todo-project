@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+/* 全域基本設定 */
+body {
+  margin: 0;
+}
+
+/* 移除按鈕預設樣式 */
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus {
+  outline: none;
+}
