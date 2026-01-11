@@ -76,7 +76,7 @@
               <span v-if="todo.completed" class="text-sm">✓</span>
             </button>
 
-            <div v-if="editingTodoId === todo.id" class="flex-1 flex gap-2">
+            <div v-if="editingTodoId === todo.id" class="flex-1 flex gap-2 items-center">
               <input
                 type="text"
                 class="flex-1 text-white bg-white/20 px-2 py-1 rounded border border-white/30"
@@ -95,52 +95,52 @@
                 取消
               </button>
             </div>
-
-            <!-- 標題 -->
-            <span
-              v-else
-              class="flex-1 text-white"
-              :class="{ 'line-through text-white/50': todo.completed }"
-            >
-              {{ todo.title }}
-            </span>
-
-            <div>
-              <!-- 編輯按鈕 -->
-              <button
-                @click="editingTodoId = todo.id"
-                class="opacity-0 group-hover:opacity-100 px-3 py-1 text-white border-white/50 transition-all"
+            <div v-else class="flex-1 flex gap-2 items-center">
+              <!-- 標題 -->
+              <span
+                class="flex-1 text-white"
+                :class="{ 'line-through text-white/50': todo.completed }"
               >
-                <svg
-                  class="w-5 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83l3.75 3.75l1.83-1.83z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-              </button>
+                {{ todo.title }}
+              </span>
 
-              <!-- 刪除按鈕 -->
-              <button
-                @click="deleteTodo(todo.id)"
-                class="opacity-0 group-hover:opacity-100 px-3 py-1 text-white border-white/50 transition-all"
-              >
-                <svg
-                  class="w-6 h-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                  viewBox="0 0 32 32"
+              <div>
+                <!-- 編輯按鈕 -->
+                <button
+                  @click="editingTodoId = todo.id"
+                  class="opacity-0 group-hover:opacity-100 px-3 py-1 text-white border-white/50 transition-all"
                 >
-                  <path
-                    fill="currentColor"
-                    d="M24 9.4L22.6 8L16 14.6L9.4 8L8 9.4l6.6 6.6L8 22.6L9.4 24l6.6-6.6l6.6 6.6l1.4-1.4l-6.6-6.6L24 9.4z"
-                  ></path>
-                </svg>
-              </button>
+                  <svg
+                    class="w-5 h-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83l3.75 3.75l1.83-1.83z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                </button>
+
+                <!-- 刪除按鈕 -->
+                <button
+                  @click="deleteTodo(todo.id)"
+                  class="opacity-0 group-hover:opacity-100 px-3 py-1 text-white border-white/50 transition-all"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 32 32"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M24 9.4L22.6 8L16 14.6L9.4 8L8 9.4l6.6 6.6L8 22.6L9.4 24l6.6-6.6l6.6 6.6l1.4-1.4l-6.6-6.6L24 9.4z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
             </div>
           </li>
         </ul>

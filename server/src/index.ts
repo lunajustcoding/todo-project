@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors'; // 原本不行所以要導入type/cors
 import { createClient } from '@supabase/supabase-js';
 import type { Request, Response } from 'express'; // 因為我寫req,res
-
+import jwt from 'jsonwebtoken';
 // 定義型別
 interface Todo {
   id: string;
@@ -23,17 +23,30 @@ const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const getUserFromToken = async (req: Request) => {
+const getUserFromToken = (req: Request) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return null;
 
   const token = authHeader.replace('Bearer ', '');
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
 
-  return user;
+  // 改用本地驗證 不需經過supabase
+  // const {
+  //   data: { user },
+  //   error,
+  // } = await supabase.auth.getUser(token);
+
+  try {
+    // JWT Secret 驗證並解析 token
+    const decoded = jwt.verify(token, process.env.SUPABASE_JWT_SECRET!);
+    //  jwt.verify() 做的事：
+    // 1. 用 JWT Secret 驗證 Signature 是否正確（確保沒被竄改）
+    // 2. 檢查是否過期
+    // 3. 回傳 Payload 內容（包含 user_id）
+    // decoded.sub 就是 user_id
+    return { id: decoded.sub };
+  } catch {
+    return null;
+  }
 };
 
 app.get('/', (req: Request, res: Response) => {
@@ -42,7 +55,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/todos', async (req: Request, res: Response) => {
   console.log('1. 收到請求', Date.now());
-  const user = await getUserFromToken(req);
+  const user = getUserFromToken(req);
   if (!user) return res.status(401).json({ message: '未登入' });
   try {
     const { data, error } = await supabase
@@ -61,7 +74,7 @@ app.get('/todos', async (req: Request, res: Response) => {
 });
 
 app.post('/todos', async (req: Request, res: Response) => {
-  const user = await getUserFromToken(req);
+  const user = getUserFromToken(req);
   if (!user) return res.status(401).json({ message: '未登入' });
   try {
     const { title, due_date } = req.body;
@@ -85,7 +98,7 @@ app.post('/todos', async (req: Request, res: Response) => {
 });
 
 app.get('/profile', async (req: Request, res: Response) => {
-  const user = await getUserFromToken(req);
+  const user = getUserFromToken(req);
   if (!user) return res.status(401).json({ message: '未登入' });
   try {
     const { data, error } = await supabase
@@ -102,7 +115,7 @@ app.get('/profile', async (req: Request, res: Response) => {
 });
 
 app.post('/profile', async (req: Request, res: Response) => {
-  const user = await getUserFromToken(req);
+  const user = getUserFromToken(req);
   if (!user) return res.status(401).json({ message: '未登入' });
   try {
     const updateData: Record<string, any> = { user_id: user.id };
@@ -131,7 +144,7 @@ app.post('/profile', async (req: Request, res: Response) => {
 });
 
 app.put('/todo/:id', async (req: Request, res: Response) => {
-  const user = await getUserFromToken(req);
+  const user = getUserFromToken(req);
   if (!user) return res.status(401).json({ message: '未登入' });
   try {
     const { id } = req.params;
@@ -162,7 +175,7 @@ app.put('/todo/:id', async (req: Request, res: Response) => {
 });
 
 app.delete('/todos/:id', async (req: Request, res: Response) => {
-  const user = await getUserFromToken(req);
+  const user = getUserFromToken(req);
   if (!user) return res.status(401).json({ message: '未登入' });
   try {
     const { id } = req.params;

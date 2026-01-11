@@ -1,2 +1,7 @@
 notes.md
 node_modules
+
+# 環境變數（含有 API 密鑰，絕對不能上傳）
+.env
+.env.local
+.env.*.local
