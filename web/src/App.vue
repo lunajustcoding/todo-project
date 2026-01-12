@@ -10,9 +10,24 @@
   >
     <div class="max-w-md mx-auto">
       <!-- 標題 -->
-      <h1 class="text-4xl font-bold text-center text-white mb-8 drop-shadow-lg">
-        Todo List
-      </h1>
+      <div class="relative mb-8">
+        <h1 class="text-4xl font-bold text-center text-white drop-shadow-lg">
+          Todo List
+        </h1>
+        <!-- 設定按鈕 -->
+        <button
+          v-if="isLogin"
+          @click="isSettingsOpen = true"
+          class="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-white/70 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+        >
+          <svg class="w-6 h-6" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 6a2 2 0 1 0 0 4a2 2 0 0 0 0-4zM7 8a1 1 0 1 1 2 0a1 1 0 0 1-2 0zm3.618-3.602a.708.708 0 0 1-.824-.567l-.26-1.416a.354.354 0 0 0-.275-.282a6.072 6.072 0 0 0-2.519 0a.354.354 0 0 0-.275.282l-.259 1.416a.71.71 0 0 1-.936.538l-1.359-.484a.355.355 0 0 0-.382.095c-.569.627-1 1.367-1.262 2.173a.352.352 0 0 0 .108.378l1.102.931a.704.704 0 0 1 0 1.076l-1.102.931a.352.352 0 0 0-.108.378A5.986 5.986 0 0 0 3.53 12.02a.355.355 0 0 0 .382.095l1.36-.484a.708.708 0 0 1 .936.538l.258 1.416c.026.14.135.252.275.281a6.075 6.075 0 0 0 2.52 0a.353.353 0 0 0 .274-.281l.26-1.416a.71.71 0 0 1 .936-.538l1.359.484c.135.048.286.01.382-.095c.569-.627 1-1.367 1.262-2.173a.352.352 0 0 0-.108-.378l-1.102-.931a.703.703 0 0 1 0-1.076l1.102-.931a.352.352 0 0 0 .108-.378A5.985 5.985 0 0 0 12.47 3.98a.355.355 0 0 0-.382-.095l-1.36.484a.71.71 0 0 1-.111.03zm-6.62.58l.937.333a1.71 1.71 0 0 0 2.255-1.3l.177-.97a5.105 5.105 0 0 1 1.265 0l.178.97a1.708 1.708 0 0 0 2.255 1.3L12 4.977c.255.334.467.698.63 1.084l-.754.637a1.704 1.704 0 0 0 0 2.604l.755.637a4.99 4.99 0 0 1-.63 1.084l-.937-.334a1.71 1.71 0 0 0-2.255 1.3l-.178.97a5.099 5.099 0 0 1-1.265 0l-.177-.97a1.708 1.708 0 0 0-2.255-1.3L4 11.023a4.987 4.987 0 0 1-.63-1.084l.754-.638a1.704 1.704 0 0 0 0-2.603l-.755-.637c.164-.386.376-.75.63-1.084z"
+              fill="currentColor"
+            ></path>
+          </svg>
+        </button>
+      </div>
 
       <!-- 未登入：顯示登入表單 -->
       <div v-if="!isLogin">
@@ -150,14 +165,7 @@
           還沒有待辦事項，新增一個吧！
         </div>
 
-        <div class="grid grid-cols-2 gap-4 items-center">
-          <button
-            @click="fetchBackgroundImage()"
-            class="w-full mt-6 py-3 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors bg-white/10"
-          >
-            切換
-          </button>
-
+        <div class="grid grid-cols-1 gap-4 items-center">
           <!-- 登出按鈕 -->
           <button
             @click="logout"
@@ -168,6 +176,15 @@
         </div>
       </div>
     </div>
+
+    <!-- 設定彈窗 -->
+    <SettingsModal
+      :isOpen="isSettingsOpen"
+      :userName="userName"
+      @close="isSettingsOpen = false"
+      @changeName="(name: string) => updateProfile({username: name})"
+      @changeBackground="fetchBackgroundImage()"
+    />
   </div>
 </template>
 
@@ -178,6 +195,12 @@ import dayjs from "dayjs";
 import { Dayjs } from "dayjs";
 import { searchRandomPhoto } from "./pexels";
 import Auth from "./components/Auth.vue";
+import SettingsModal from "./components/SettingsModal.vue";
+
+interface User {
+  username: string;
+  bg_url: string;
+}
 
 interface Todo {
   id: string;
@@ -193,6 +216,8 @@ const newTodo = ref<string>("");
 const useBackGround = ref<string>("");
 const selectedDate = ref<string>("");
 const weekDates = ref<Dayjs[]>([]);
+const isSettingsOpen = ref<boolean>(false);
+const userName = ref<string>("");
 
 const logout = async () => {
   await supabase.auth.signOut();
@@ -203,31 +228,6 @@ const switchDate = (date: Dayjs) => {
   selectedDate.value = dayjs(date).format("YYYY-MM-DD");
   fetchTodos();
 };
-
-// const getWeekDates = () => {
-//   const today = new Date(); // 今天是幾號
-//   const todayOfWeeks = today.getDay(); // getDay()是星期幾 所以 0=日 1=一 已禮拜日為起始
-//   // 拿today的今天是幾號，看today是星期幾
-//   console.log("today", today);
-//   console.log("getWeekDates", getWeekDates);
-//   const sunday = new Date(today);
-//   // 這邊要用today做基準，但不直接使用today會被改到
-//   console.log("設定sunday，使用today的值", sunday);
-//   sunday.setDate(today.getDate() - todayOfWeeks);
-//   // setDate 要的是幾號不是星期幾
-//   // 設定這個星期日是 以今天幾號為基準 減掉 今天是星期幾
-//   // 假設今天 4 號 ，並且 4 號.getDay() 是禮拜日 所以 4 - 0 = 4;
-//   // 假設今天 22 號 ，並且 22 號.getDay() 是禮拜四 所以 22 - 4 = 18;
-//   // 18號是禮拜日
-
-//   // 產生一個陣列，從18號到七天後的日期，存進 weekDates
-//   weekDates.value = Array.from({ length: 7 }, (_, i) => {
-//     const date = new Date(sunday);
-//     // 設定一個日期叫做date 並且起始日是sunday算出來的18號;
-//     date.setDate(sunday.getDate() + i); // [ 18 ,19 ,20 ...]
-//     return date;
-//   });
-// };
 
 const getWeekDates = () => {
   const sunday = dayjs().startOf("week"); // 本週日
@@ -245,23 +245,7 @@ const fetchBackgroundImage = async () => {
     if (!photo) return;
 
     useBackGround.value = photo.src.original;
-    savebg();
-  } catch (e) {
-    console.error("失敗:", e);
-  }
-};
-
-const savebg = async () => {
-  const token = await getToken();
-  try {
-    await fetch(`${API_URL}/profile`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ bg_url: useBackGround.value }),
-    });
+    updateProfile({ bg_url: photo.src.original });
   } catch (e) {
     console.error("失敗:", e);
   }
@@ -274,7 +258,7 @@ const getToken = async () => {
   return session?.access_token;
 };
 
-const getUser = async () => {
+const getProfile = async () => {
   const token = await getToken();
   try {
     const res = await fetch(`${API_URL}/profile`, {
@@ -286,14 +270,48 @@ const getUser = async () => {
     if (data.bg_url) {
       useBackGround.value = data.bg_url;
     }
-    // if (res.bg_url) {
-    //   useBackGround.value = res.bg_url;
-    //   console.log('已更新',useBackGround.value )
-    // }
+    userName.value = data.username;
   } catch (e) {
     console.error("失敗:", e);
   }
 };
+
+const updateProfile = async (data: Partial<User>) => {
+  const token = await getToken();
+  try {
+    await fetch(`${API_URL}/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (data.username) userName.value = data.username;
+    if (data.bg_url) useBackGround.value = data.bg_url;
+  } catch (e) {
+    console.error("失敗", e);
+  }
+};
+
+// const updateProfile = async (data: Partial<User>) => {
+//   const token = await getToken();
+//   try {
+//     await fetch(`${API_URL}/profile`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//       body: JSON.stringify(data),
+//     });
+//     // 更新本地狀態
+//     if (data.username) userName.value = data.username;
+//     if (data.bg_url) useBackGround.value = data.bg_url;
+//   } catch (e) {
+//     console.error("失敗:", e);
+//   }
+// };
 
 const fetchTodos = async () => {
   const token = await getToken();
@@ -385,14 +403,18 @@ onMounted(async () => {
   } = await supabase.auth.getUser();
   if (user) {
     isLogin.value = true;
+    console.log(user);
+    userName.value = user.email || user.id;
   }
   supabase.auth.onAuthStateChange((event, session) => {
     isLogin.value = !!session;
     if (session) {
+      userName.value = session.user.email || session.user.id;
       fetchTodos();
-      getUser();
+      getProfile();
     } else {
       todos.value = [];
+      userName.value = "";
     }
   });
 });

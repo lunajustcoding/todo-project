@@ -4,6 +4,15 @@ import cors from 'cors'; // 原本不行所以要導入type/cors
 import { createClient } from '@supabase/supabase-js';
 import type { Request, Response } from 'express'; // 因為我寫req,res
 import jwt from 'jsonwebtoken';
+
+interface User {
+  id: string
+  user_id: string,
+  username: string,
+  bg_url: string,
+  created_at: string
+}
+
 // 定義型別
 interface Todo {
   id: string;
@@ -132,6 +141,34 @@ app.post('/profile', async (req: Request, res: Response) => {
     const { data, error } = await supabase
       .from('profiles')
       .upsert(updateData, { onConflict: 'user_id' })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Profile 錯誤:', error);
+    res.status(500).json({ message: '無法更新個人資訊' });
+  }
+});
+
+app.put('/profile', async (req: Request, res: Response) => {
+  const user = getUserFromToken(req);
+  if (!user) return res.status(401).json({ message: '未登入' });
+  try {
+    const { username, bg_url } = req.body;
+    if (username === undefined && bg_url === undefined) {
+      return res.status(400).json({
+        message: '沒有新的資源被更新',
+      });
+    }
+    const updateData: Partial<User> = {};
+    if (username !== undefined) updateData.username = username;
+    if (bg_url !== undefined) updateData.bg_url = bg_url;
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('user_id', user.id)
       .select()
       .single();
 
